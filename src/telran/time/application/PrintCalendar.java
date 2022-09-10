@@ -18,7 +18,7 @@ public class PrintCalendar {
 			System.out.println(e.getMessage());
 		}
 	}
-
+	
 	private static void printCalendar(int month, int year, int startDay) {
 		printTitle(month, year);
 		printWeekDays(startDay);
