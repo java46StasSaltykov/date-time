@@ -56,7 +56,6 @@ public class PrintCalendar {
 		return weekDay - firstWeekDay >= 0 ? weekDay - firstWeekDay : 7 + weekDay - firstWeekDay;
 	}
 
-	
 	private static void printWeekDays(int startDay) {
 		DayOfWeek dayWeeks[] = DayOfWeek.values();
 		System.out.print("  ");
