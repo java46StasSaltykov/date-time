@@ -3,28 +3,32 @@ package telran.time;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.time.*;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAdjuster;
+import java.util.Locale;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class DateTimeOperationsTest {
 
+	LocalDate birthAS = LocalDate.of(1799, 6, 6);
+	
 	@BeforeEach
 	void setUp() throws Exception {
 	}
 
 	@Test
 	void dateOperationsTest() {
-		LocalDate birthAS = LocalDate.of(1799, 6, 6);
+		birthAS = LocalDate.of(1799, 6, 6);
 		LocalDate barMizvaAS = birthAS.plusYears(13);
 		assertEquals(LocalDate.of(1812, 6, 6), barMizvaAS);
 	}
 	
 	@Test
 	void adjusterTest() {
-		LocalDate birthAS = LocalDate.of(1799, 6, 6);
+		birthAS = LocalDate.of(1799, 6, 6);
 		LocalDateTime lt = LocalDateTime.now();
 		assertEquals(LocalDate.of(1812, 6, 6), birthAS.with(new BarMizvaAdjuster()));
 		System.out.println(lt.with(new BarMizvaAdjuster()));
@@ -58,6 +62,55 @@ class DateTimeOperationsTest {
 				ChronoUnit.YEARS.between(LocalDateTime.of(1950, 1, 20, 0, 0, 0), current));
 		System.out.printf(format, LocalDateTime.of(1950, 1, 20, 0, 0, 0), current,
 				ChronoUnit.SECONDS.between(LocalDateTime.of(1950, 10, 20, 0, 0, 0), current));
+	}
+	
+	@Test
+	void chronoUnitTest() {
+		ChronoUnit unit = ChronoUnit.YEARS;
+		System.out.printf("From AS birthday %d %s passed\n", 
+				unit.between(birthAS, LocalDate.now()), unit);
+	}
+	
+	@Test
+	void periodTest() {
+		Period period = Period.between(birthAS, LocalDate.now());
+		System.out.printf("number years %d, number months %d, number days %d\n",
+				period.getYears(), period.getMonths(), period.getDays());
+	}
+	
+	@Test
+	void timeTest() {
+		Instant current = Instant.now();
+		System.out.printf("amount miliseconds from EPOCH time point %d\n", current.toEpochMilli());
+		System.out.printf("date time of EPOCH %s GMT\n", Instant.EPOCH);
+		LocalDateTime ldt = LocalDateTime.ofInstant(Instant.EPOCH, ZoneId.systemDefault());
+		System.out.printf("date time of EPOCH %s Israel - LocalDateTime\n", ldt);
+		ZonedDateTime zdt = ZonedDateTime.ofInstant(Instant.EPOCH, ZoneId.systemDefault());
+		System.out.printf("date time of EPOCH %s Israel - ZonedDateTime\n", zdt);
+		ldt = LocalDateTime.now();
+		zdt = ZonedDateTime.now();
+		System.out.printf("now date time value %s Israel - LocalDateTime\n", ldt);
+		System.out.printf("now date time value %s Israel - ZonedDateTime\n", zdt);
+	}
+	
+	@Test
+	void zoneTimeTest() {
+		ZoneId.getAvailableZoneIds().stream().forEach(z -> System.out.printf("time zone name: %s\n", z));
+	}
+	
+	@Test
+	void timeInCanadaTest() {
+		ZoneId.getAvailableZoneIds().stream()
+		.filter(x -> x.toLowerCase().contains("canada"))
+		.map(z -> ZonedDateTime.now(ZoneId.of(z)))
+		.forEach(System.out::println);;
+	}
+	
+	@Test
+	void dateTimeFormatterTest() {
+		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("MMM d, yyyy E h:m a B", Locale.forLanguageTag("en"));
+		LocalDateTime ldt = LocalDateTime.now();
+		System.out.println(ldt.format(dtf));
 	}
 	
 }
