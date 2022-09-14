@@ -29,14 +29,16 @@ public class Reminder {
 		}
 		
 	}
-
+	
+	//FIXME
+	//each time getting into infinity loop trying to implement the needed algorithm 
 	private static void remind(int beepInterval, ChronoUnit timeUnit, int duration) {
 		ChronoUnit durationTimeUnit = duration > 0 ? timeUnit : ChronoUnit.HOURS;
 		if (duration < 0) {
 			duration = 1;
 		}
 		Temporal currentTime = LocalTime.now();
-		LocalTime finishTime = LocalTime.now().plus(duration, durationTimeUnit);
+		Temporal finishTime = LocalTime.now().plus(duration, durationTimeUnit);
 		while (!LocalTime.now().equals(finishTime)) {
 			if (LocalTime.now().equals(currentTime.plus(beepInterval, timeUnit))) {
 				System.out.println("\007\007\007");
