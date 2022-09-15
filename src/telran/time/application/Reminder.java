@@ -1,93 +1,108 @@
 package telran.time.application;
 
-import java.time.LocalTime;
+import java.time.Duration;
+import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.time.temporal.Temporal;
-
-//Application class
-//Performs beeps each specified time interval
 
 public class Reminder {
 	
+	static final long DEFAULT_BEEPS_DURATION = 3_600_000; // in milliseconds
+	static long intervalOfBeeps;
+	static ChronoUnit unit;
+	static long beepsDuration;
+
 	public static void main(String[] args) {
 		// mandatory args[0] interval value
 		// mandatory args[1] ChronoUnit enum string value (case insensitive)
-		// optional args[2] when ended in the given ChronoUnit (see args[1]), default in 1 hour
+		// optional args[2] when ended in the given ChronoUnit (see args[1]), default in
+		// 1 hour
 		// beep System.out.println("\007\007\007") - will sound only on real console
-		// example of launch : java -jar reminder.jar 10 seconds 100 
-		// - each 10 seconds during 100 seconds there should be beeps
-		
-		
+		// example of launching: java -jar reminder.jar 10 seconds 100 -
+		// each 10 seconds during 100 seconds there should be beeps
 		try {
-			int beepInterval = getBeepInterval(args[0]);
-			ChronoUnit timeUnit = getTimeUnit(args[1]);
-			int duration = args[2] != null ? getDuration(args[2]) : -1;
-			remind(beepInterval, timeUnit, duration);
-			
+			setArguments(args);
+			runBeeps();
+		} catch (RuntimeException e) {
+			e.printStackTrace();
 		} catch (Exception e) {
 			System.out.println(e.getMessage());
 		}
-		
-	}
-	
-	//FIXME
-	//each time getting into infinity loop trying to implement the needed algorithm 
-	private static void remind(int beepInterval, ChronoUnit timeUnit, int duration) {
-		ChronoUnit durationTimeUnit = duration > 0 ? timeUnit : ChronoUnit.HOURS;
-		if (duration < 0) {
-			duration = 1;
-		}
-		Temporal currentTime = LocalTime.now();
-		Temporal finishTime = LocalTime.now().plus(duration, durationTimeUnit);
-		while (!LocalTime.now().equals(finishTime)) {
-			if (LocalTime.now().equals(currentTime.plus(beepInterval, timeUnit))) {
-				System.out.println("\007\007\007");
-				currentTime = LocalTime.now();
-			}
-		}
-		System.out.println("Finished!");
+
 	}
 
-	private static int getDuration(String duration) throws Exception {
-		try {
-			int res = Integer.parseInt(duration);
-			if (res <= 0) {
-				throw new Exception("duration should be positive a number");
-			}
-			return res;
-		} catch (NumberFormatException e) {
-			throw new Exception("duration should be a number");
-		}
+	private static void setArguments(String[] args) throws Exception {
+		setIntervalOfBeeps(args);
+		setUnit(args);
+		intervalToMillis();
+		setBeepsDuration(args);
 	}
 
-	private static ChronoUnit getTimeUnit(String timeUnit) throws Exception {
-		try {
-			String unit = timeUnit.toUpperCase();
-			ChronoUnit[] chronoValues = ChronoUnit.values();
-			ChronoUnit res = ChronoUnit.valueOf(unit);
-			for (int i = 0; i < chronoValues.length; i++) {
-				if (chronoValues[i].equals(res)) {
-					return res;
-				}
+	private static void runBeeps() {
+		Instant start = Instant.now();
+
+		do {
+			waitingFor(intervalOfBeeps);
+			System.out.println("\007\007\007");
+		} while (ChronoUnit.MILLIS.between(start, Instant.now()) < beepsDuration);
+
+	}
+
+	private static void waitingFor(long periodInMillis) {
+		Instant start = Instant.now();
+		do {
+
+		} while (ChronoUnit.MILLIS.between(start, Instant.now()) < periodInMillis);
+
+	}
+
+	private static void setBeepsDuration(String[] args) throws Exception {
+		if (args.length < 3) {
+			beepsDuration = DEFAULT_BEEPS_DURATION; // one hour to milliseconds
+		} else {
+			try {
+				beepsDuration = Long.parseLong(args[2]);
+			} catch (NumberFormatException e) {
+				throw new Exception("Beeps duration should be a number");
 			}
-			return null;		
-			
+			if (beepsDuration < 0) {
+				throw new Exception("Beeps duration can't be a negative number");
+			}
+			beepsDuration = Duration.of(beepsDuration, unit).toMillis();
+		}
+
+	}
+
+	private static void intervalToMillis() {
+		intervalOfBeeps = Duration.of(intervalOfBeeps, unit).toMillis();// conversion to milliseconds from unit
+
+	}
+
+	private static void setUnit(String[] args) throws Exception {
+		if (args.length < 2) {
+			throw new Exception("Chrono Unit should be specified as the second argument");
+		}
+		try {
+			unit = ChronoUnit.valueOf(args[1].toUpperCase());
+
 		} catch (IllegalArgumentException e) {
-			throw new Exception("Time unit should be a string!");
+			throw new Exception(args[1] + "Wrong Chrono Unit");
 		}
+
 	}
 
-	private static int getBeepInterval(String beepInterval) throws Exception {
-		try {
-			int res = Integer.parseInt(beepInterval);
-			if (res <= 0) {
-				throw new Exception("Interval should be a positive number");
-			}
-			return res;
-			
-		} catch (NumberFormatException e) {
-			throw new Exception("Interval should be a number");
+	private static void setIntervalOfBeeps(String[] args) throws Exception {
+		if (args.length == 0) {
+			throw new Exception("Interval between beeps should be specified as the first argument");
 		}
+		try {
+			intervalOfBeeps = Long.parseLong(args[0]);
+		} catch (NumberFormatException e) {
+			throw new Exception("Interval between beeps should be a number");
+		}
+		if (intervalOfBeeps < 0) {
+			throw new Exception("interval can't be a negative number");
+		}
+
 	}
 
 }
